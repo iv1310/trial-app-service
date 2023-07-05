@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  builder:
+    image: golang:1.19-alpine
+    volumes:
+      - "./:/app"
+    command: >
+      sh -c "go mod tidy
+      && go build -a -installsuffix cgo -o myapp ."
+    environment:
+      - CGO_ENABLED=0
+      - GOOS=linux
+    working_dir: /app
