@@ -1,4 +1,4 @@
-# Stage 1: Build the Go application
+# Stage 1: Build the Go application!
 FROM golang:1.19-alpine AS builder
 
 WORKDIR /go/src/app
