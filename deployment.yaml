@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trial-app-deploy
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: trial-app
+  template:
+    metadata:
+      labels:
+        app: trial-app
+    spec:
+      nodeSelector:
+        node-type: apps-node
+      containers:
+      - name: trial-app
+        image: ghcr.io/iv1310/trial-app-service:CHANGE_ME_TAG
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - secretRef:
+            name: trial-app-secret
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
