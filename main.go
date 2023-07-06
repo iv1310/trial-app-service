@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"strconv"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -50,6 +52,69 @@ func storeTimestampToDB(timestamp time.Time) error {
 	return nil
 }
 
+func getCPUUsage() float64 {
+	cpuFile := "/sys/fs/cgroup/cpu/cpuacct.usage"
+
+	// Read the value from the file
+	data, err := os.ReadFile(cpuFile)
+	if err != nil {
+		log.Fatalf("Error reading file: %v", err)
+	}
+
+	// Parse the value as an integer
+	value, err := parseCPUUsage(string(data))
+	if err != nil {
+		log.Fatalf("Error parsing value: %v", err)
+	}
+
+	// Get the number of CPU cores
+	cores := float64(runtime.NumCPU())
+
+	// Calculate the CPU usage as a percentage
+	cpuUsage := float64(value) / cores
+
+	return cpuUsage
+}
+
+func getMemoryUsage() float64 {
+	memFile := "/sys/fs/cgroup/memory/memory.usage_in_bytes"
+
+	// Read the value from the file
+	data, err := os.ReadFile(memFile)
+	if err != nil {
+		log.Fatalf("Error reading file: %v", err)
+	}
+
+	// Parse the value as an integer
+	value, err := parseMemoryUsage(string(data))
+	if err != nil {
+		log.Fatalf("Error parsing value: %v", err)
+	}
+
+	// Convert the value to megabytes
+	memUsage := float64(value) / (1024 * 1024)
+
+	return memUsage
+}
+
+func parseCPUUsage(data string) (int64, error) {
+	data = strings.TrimSpace(data)
+	value, err := strconv.ParseInt(data, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return value, nil
+}
+
+func parseMemoryUsage(data string) (int64, error) {
+	data = strings.TrimSpace(data)
+	value, err := strconv.ParseInt(data, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return value, nil
+}
+
 func handler(w http.ResponseWriter, r *http.Request) {
 	osVersion := runtime.GOOS
 	trialStartDate := time.Date(2023, time.July, 05, 0, 0, 0, 0, time.UTC)
@@ -63,10 +128,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Current OS Version: %s", osVersion)
+	cpuUsage := getCPUUsage()
+	memUsage := getMemoryUsage()
+
+	fmt.Fprintf(w, "Current OS Version: %s\n", osVersion)
 	fmt.Fprintf(w, "Xendit - Trial - Candidate Name: Ivan Fransiskus Simatupang\n")
 	fmt.Fprintf(w, "Trial Start Date: %s\n", trialStartDate.Format("2006-01-02"))
 	fmt.Fprintf(w, "Current Date: %s\n", currentDate.Format("2006-01-02"))
+	fmt.Fprintf(w, "CPU Usage: %.2f%%\n", cpuUsage*100)
+	fmt.Fprintf(w, "Memory Usage: %.2f MB\n", memUsage)
+
 	log.Printf("User accessed the application. Remote Addr: %s\n", r.RemoteAddr)
 }
 
