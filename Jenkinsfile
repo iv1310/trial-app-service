@@ -5,7 +5,7 @@ pipeline {
 	}
 	options {
 		timestamps()
-		buildDiscarder(logRotator(numToKeepStr: '6'))
+		buildDiscarder(logRotator(numToKeepStr: '5'))
 	}
 
 	stages {
