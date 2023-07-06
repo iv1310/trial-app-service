@@ -52,6 +52,7 @@ func storeTimestampToDB(timestamp time.Time) error {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	osVersion := runtime.GOOS
+	trialStartDate := time.Date(2023, time.July, 05, 0, 0, 0, 0, time.UTC)
 	currentDate := time.Now()
 
 	// Store timestamp in MySQL database
@@ -63,6 +64,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "Current OS Version: %s", osVersion)
+	fmt.Fprintf(w, "Xendit - Trial - Candidate Name: Ivan Fransiskus Simatupang\n")
+	fmt.Fprintf(w, "Trial Start Date: %s\n", trialStartDate.Format("2006-01-02"))
+	fmt.Fprintf(w, "Current Date: %s\n", currentDate.Format("2006-01-02"))
 	log.Printf("User accessed the application. Remote Addr: %s\n", r.RemoteAddr)
 }
 
