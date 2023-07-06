@@ -7,12 +7,11 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"strconv"
-	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/mackerelio/go-osstat/cpu"
+	"github.com/mackerelio/go-osstat/memory"
 )
 
 func storeTimestampToDB(timestamp time.Time) error {
@@ -54,22 +53,12 @@ func storeTimestampToDB(timestamp time.Time) error {
 }
 
 func getMemoryUsage() float64 {
-	memFile := "/sys/fs/cgroup/memory/memory.usage_in_bytes"
-
-	// Read the value from the file
-	data, err := os.ReadFile(memFile)
+	memStats, err := memory.Get()
 	if err != nil {
-		log.Fatalf("Error reading file: %v", err)
+		log.Fatalf("Error getting memory stats: %v", err)
 	}
 
-	// Parse the value as an integer
-	value, err := parseMemoryUsage(string(data))
-	if err != nil {
-		log.Fatalf("Error parsing value: %v", err)
-	}
-
-	// Convert the value to megabytes
-	memUsage := float64(value) / (1024 * 1024)
+	memUsage := float64(memStats.Used) / (1024 * 1024) // Convert to megabytes
 
 	return memUsage
 }
@@ -93,15 +82,6 @@ func getCPUUsage() float64 {
 	cpuUsage := 100.0 * (1.0 - float64(idleTimeDiff)/float64(totalTimeDiff))
 
 	return cpuUsage
-}
-
-func parseMemoryUsage(data string) (int64, error) {
-	data = strings.TrimSpace(data)
-	value, err := strconv.ParseInt(data, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	return value, nil
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
