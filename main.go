@@ -12,6 +12,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/mackerelio/go-osstat/cpu"
 )
 
 func storeTimestampToDB(timestamp time.Time) error {
@@ -52,30 +53,6 @@ func storeTimestampToDB(timestamp time.Time) error {
 	return nil
 }
 
-func getCPUUsage() float64 {
-	cpuFile := "/sys/fs/cgroup/cpu/cpuacct.usage"
-
-	// Read the value from the file
-	data, err := os.ReadFile(cpuFile)
-	if err != nil {
-		log.Fatalf("Error reading file: %v", err)
-	}
-
-	// Parse the value as an integer
-	value, err := parseCPUUsage(string(data))
-	if err != nil {
-		log.Fatalf("Error parsing value: %v", err)
-	}
-
-	// Get the number of CPU cores
-	cores := float64(runtime.NumCPU())
-
-	// Calculate the CPU usage as a percentage
-	cpuUsage := float64(value) / cores
-
-	return cpuUsage
-}
-
 func getMemoryUsage() float64 {
 	memFile := "/sys/fs/cgroup/memory/memory.usage_in_bytes"
 
@@ -97,13 +74,25 @@ func getMemoryUsage() float64 {
 	return memUsage
 }
 
-func parseCPUUsage(data string) (int64, error) {
-	data = strings.TrimSpace(data)
-	value, err := strconv.ParseInt(data, 10, 64)
+func getCPUUsage() float64 {
+	initialStats, err := cpu.Get()
 	if err != nil {
-		return 0, err
+		log.Fatalf("Error getting initial CPU stats: %v", err)
 	}
-	return value, nil
+
+	time.Sleep(1 * time.Second)
+
+	newStats, err := cpu.Get()
+	if err != nil {
+		log.Fatalf("Error getting new CPU stats: %v", err)
+	}
+
+	totalTimeDiff := newStats.Total - initialStats.Total
+	idleTimeDiff := newStats.Idle - initialStats.Idle
+
+	cpuUsage := 100.0 * (1.0 - float64(idleTimeDiff)/float64(totalTimeDiff))
+
+	return cpuUsage
 }
 
 func parseMemoryUsage(data string) (int64, error) {
@@ -135,7 +124,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Xendit - Trial - Candidate Name: Ivan Fransiskus Simatupang\n")
 	fmt.Fprintf(w, "Trial Start Date: %s\n", trialStartDate.Format("2006-01-02"))
 	fmt.Fprintf(w, "Current Date: %s\n", currentDate.Format("2006-01-02"))
-	fmt.Fprintf(w, "CPU Usage: %.2f%%\n", cpuUsage*100)
+	fmt.Fprintf(w, "CPU Usage: %.2f%%\n", cpuUsage)
 	fmt.Fprintf(w, "Memory Usage: %.2f MB\n", memUsage)
 
 	log.Printf("User accessed the application. Remote Addr: %s\n", r.RemoteAddr)
