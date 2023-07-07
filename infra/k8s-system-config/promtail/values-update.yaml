@@ -1,0 +1,5 @@
+rbac:
+  pspEnabled: false
+config:
+  clients:
+    - url: http://loki-stack-loki-distributed-gateway.loki-stack.svc.cluster.local/loki/api/v1/push

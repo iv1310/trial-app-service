@@ -15,7 +15,7 @@ COPY main.go .
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /go/bin/app .
 
 # Stage 2: Create a minimal container for running the application
-FROM gcr.io/distroless/static-debian11
+FROM gcr.io/distroless/static-debian11:nonroot
 
 COPY --from=builder /go/bin/app /
 CMD ["/app"]
