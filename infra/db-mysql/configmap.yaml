@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb-config
+data:
+  initdb.sql: |
+    CREATE DATABASE IF NOT EXISTS trial-app-service;
+    USE trial-app-service;
+
+    CREATE TABLE IF NOT EXISTS access_logs (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      access_time DATETIME
+    );

@@ -1,0 +1,12 @@
+controller:
+  kind: DaemonSet
+  nodeSelector:
+    node-type: apps-node
+  service:
+    enabled: true
+    type: NodePort
+    nodePorts:
+      http: 32080
+      https: 32443
+  metrics:
+    enabled: true

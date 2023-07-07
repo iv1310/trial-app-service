@@ -1,0 +1,12 @@
+accessKey: REDACTED!
+secretKey: REDACTED!
+
+defaultBucket:
+  enabled: true
+  name: lokistorage
+  policy: none
+  purge: true
+
+resources:
+  requests:
+    memory: 1Gi
