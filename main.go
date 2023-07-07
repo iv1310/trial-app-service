@@ -101,7 +101,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	memUsage := getMemoryUsage()
 
 	fmt.Fprintf(w, "Current OS Version: %s\n", osVersion)
-	fmt.Fprintf(w, "Xendit - Trial - Candidate Name: Ivan Fransiskus Simatupang!\n")
+	fmt.Fprintf(w, "Xendit - Trial - Candidate Name: Ivan Fransiskus Simatupang!!!\n")
 	fmt.Fprintf(w, "Trial Start Date: %s\n", trialStartDate.Format("2006-01-02"))
 	fmt.Fprintf(w, "Current Date: %s\n", currentDate.Format("2006-01-02"))
 	fmt.Fprintf(w, "CPU Usage: %.2f%%\n", cpuUsage)
